@@ -13,7 +13,7 @@ export class itemsRepository {
 
     findById = async(id:number) => {return  this.queryRows("SELECT * FROM items where id = ?",[id])}
 
-    findAll = async() => {return this.queryRows("SELECT * FROM items",[])}
+    findAll = async() => { return this.queryRows("SELECT * FROM items",[]) }
 
     create = async(name:string, description:string) => { return this.queryExecuter("INSERT INTO items (name, description) VALUES (?,?)",[name, description])}
 

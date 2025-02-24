@@ -5,7 +5,7 @@ export class itemsService {
 
     getById = async(id:number) => {return await this.repo.findById(id)}
 
-    getAll = async() => {return this.repo.findAll()}
+    getAll = async () => {return await this.repo.findAll()}
 
     create = async(name:string, description:string) => {return await this.repo.create(name,description)}
 

@@ -1,53 +1,37 @@
-import {itemsService} from "./items.service"
-import { Request, Response } from "express"
+import { itemsService } from "./items.service";
+import { Request, Response } from "express";
 
-const moduleAndApi = (module:string, api:string) => {console.log(`${module} => ${api}`)}
-
-const sendResponse = (res: Response, status: number, message?: string, data?: any) => {
-    const isError = status >=400;
-    console.log(`${isError ? 'Error' : 'Éxito'} en ${res.req?.path}: ${message ?? 'Operación completada'}`);
-    res.status(status).json({ message: message ?? 'Operación completada', data });
+const logAndRespond = (res: Response, status: number, data?: any, message?: string) => {
+    console.log(`${status >= 400 ? '❌' : '✅'} [ ${res.req?.path} ] ${message ?? 'Operación completada'}`);
+    res.status(status).json(data ?? { message: message ?? 'Operación completada' });
 };
 
-
-const handleRequest = (fn:(req:Request, res:Response) => Promise<any>) => {
-    async (req:Request, res:Response) => {
-        return fn(req,res).catch(error => sendResponse(res,500,String(error)))
-    }
-}
-
+const handleRequest = (fn: (req: Request, res: Response) => Promise<any>) => 
+    async (req: Request, res: Response) => fn(req, res).catch(error => logAndRespond(res, 500, null, String(error)));
 
 export class ItemsController {
-    private service = new itemsService()
+    private service = new itemsService();
 
-    create = handleRequest( async (req, res) => {
-        moduleAndApi("Items","Create")
-        const data = req.body
-        res.status(201).json(await this.service.create(data.name,data.description))
-    })
+    create = handleRequest(async (req, res) => 
+        logAndRespond(res, 201, await this.service.create(req.body.name, req.body.description))
+    );
 
-    getAll = handleRequest(async(req,res) => {
-        moduleAndApi("Items","GetAll");
-        res.status(200).json(await this.service.getAll)
-    })
+    getAll = handleRequest(async (req, res) => 
+        logAndRespond(res, 200, await this.service.getAll())
+    );
 
-    getById = handleRequest(async (req,res) => {
-        moduleAndApi("Items","GetById");
-        const id:number = parseInt(req.params.id,10)
-        res.status(200).json(await this.service.getById(id))
-    })
+    getById = handleRequest(async (req, res) => {
+        const id = parseInt(req.params.id, 10)
+        logAndRespond(res, 200, await this.service.getById(id))
+    });
 
-    delete = handleRequest(async (req,res) => {
-        moduleAndApi("Items","Delete");
-        const id:number = parseInt(req.body.id)
-        res.status(200).json(await this.service.delete(id))
-    })
+    delete = handleRequest(async (req, res) => {
+        const id = parseInt(req.params.id, 10)
+        return logAndRespond(res, 200, await this.service.delete(id))
+    });
 
-    update = handleRequest(async (req,res) => {
-        moduleAndApi("Items","Update");
-        const id:number = parseInt(req.params.id, 10)
-        const data = req.body
-        res.status(200).json(await this.service.update(id, data.name,data.description))
-    })
+    update = handleRequest(async (req, res) => {
+        const id = parseInt(req.params.id, 10)
+        return logAndRespond(res, 200, await this.service.update(id, req.body.name, req.body.description))
+    });
 }
-
